@@ -90,9 +90,12 @@ TypeScriptPlugin.prototype.findImportDeclarations = function findImportDeclarati
   function visit(node) {
     if (node.kind === ts.SyntaxKind.ImportDeclaration) {
       result.push(node.moduleReference.expression.text);
-    } else {
-      ts.forEachChild(node, visit);
+    } else if (node.kind === ts.SyntaxKind.SourceFile) {
+      result = result.concat(node.referencedFiles.map(function(f) {
+        return path.resolve(path.dirname(node.filename), f.filename);
+      }));
     }
+    ts.forEachChild(node, visit);
   }
 };
 
