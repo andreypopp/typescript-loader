@@ -23,7 +23,9 @@ function TypeScriptPlugin(options) {
   }
   this.files = {};
   this.services = ts.createLanguageService(this, ts.createDocumentRegistry());
-  this.addFile(this.getDefaultLibFilename());
+
+  var libFilename = this.getDefaultLibFilename();
+  this._addFile(libFilename, fs.readFileSync(libFilename, 'utf8'));
 }
 
 TypeScriptPlugin.prototype.apply = function apply(compiler) {
@@ -76,10 +78,25 @@ TypeScriptPlugin.prototype.log = function log(message) {
   return console.log(message);
 };
 
-TypeScriptPlugin.prototype.addFile = function addFile(filename, text) {
-  if (text === undefined) {
-    text = fs.readFileSync(filename, 'utf8');
+/**
+ * Return an array of import declarations found in source file.
+ */
+TypeScriptPlugin.prototype.findImportDeclarations = function findImportDeclarations(filename) {
+  var node = this.services.getSourceFile(filename);
+  var result = [];
+  visit(node);
+  return result;
+
+  function visit(node) {
+    if (node.kind === ts.SyntaxKind.ImportDeclaration) {
+      result.push(node.moduleReference.expression.text);
+    } else {
+      ts.forEachChild(node, visit);
+    }
   }
+};
+
+TypeScriptPlugin.prototype._addFile = function _addFile(filename, text) {
   var prevFile = this.files[filename];
   var version = 0;
   if (prevFile) {
@@ -92,16 +109,15 @@ TypeScriptPlugin.prototype.addFile = function addFile(filename, text) {
 };
 
 TypeScriptPlugin.prototype.emit = function emit(resolver, filename, text, cb) {
-  this.addFile(filename, text);
+  this._addFile(filename, text);
 
   var result = Promise.resolve();
-  var found = [];
-  this.findImportStatement(found, this.services.getSourceFile(filename));
+  var dependencies = this.findImportDeclarations(filename);
 
   result = result
     .then(function() {
-      return Promise.all(found.map(function(filename) {
-        return resolve(filename).then(function(filename) {
+      return Promise.all(dependencies.map(function(dep) {
+        return resolver(path.dirname(filename), dep).then(function(filename) {
           return readFile(filename, 'utf8').then(function(text) {
             return {text: text, filename: filename};
           });
@@ -110,7 +126,7 @@ TypeScriptPlugin.prototype.emit = function emit(resolver, filename, text, cb) {
     })
     .then(function(deps) {
       deps.forEach(function(dep) {
-        this.addFile(dep.filename, dep.text);
+        this._addFile(dep.filename, dep.text);
       }, this);
     }.bind(this));
 
@@ -126,26 +142,6 @@ TypeScriptPlugin.prototype.emit = function emit(resolver, filename, text, cb) {
       cb(null, {errors: errors});
     }
   }.bind(this), cb);
-
-  function resolve(input) {
-    return new Promise(function(resolve, reject) {
-      resolver(path.dirname(filename), input, function(err, result) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
-    });
-  }
-};
-
-TypeScriptPlugin.prototype.findImportStatement = function findImportStatement(found, node) {
-  if (node.kind === ts.SyntaxKind.ImportDeclaration) {
-    found.push(node.moduleReference.expression.text);
-  } else {
-    ts.forEachChild(node, this.findImportStatement.bind(this, found));
-  }
 };
 
 module.exports = TypeScriptPlugin;

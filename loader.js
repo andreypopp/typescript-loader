@@ -3,21 +3,24 @@
  */
 'use strict';
 
+var Promise = require('bluebird');
+
 function typescriptLoader(text) {
   if (this.cacheable) {
     this.cacheable();
   }
   var cb = this.async();
   var filename = this.resourcePath;
-  this._compiler.typeScriptPlugin.emit(this.resolve.bind(this), filename, text, function(err, result) {
+  var resolver = Promise.promisify(this.resolve);
+  this._compiler.typeScriptPlugin.emit(resolver, filename, text, function(err, result) {
     if (err) {
       return cb(err);
     }
     if (result.output) {
       for (var i = 0; i < result.output.outputFiles.length; i++) {
         var o = result.output.outputFiles[i];
-        var oName = o.name.replace(/\.js$/, '.ts');
-        if (oName === filename) {
+        // tsc mangles filenames by replacing .ts to .js
+        if (o.name.replace(/\.js$/, '.ts') === filename) {
           return cb(null, o.text);
         }
       }
