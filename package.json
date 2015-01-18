@@ -1,0 +1,35 @@
+{
+  "name": "typescript-webpack-plugin",
+  "version": "1.0.0",
+  "description": "TypeScript Webpack Plugin",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "dependencies": {
+    "bluebird": "^2.7.1",
+    "object-assign": "^2.0.0",
+    "typescript": "^1.4.1",
+    "webpack": "^1.5.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andreypopp/typescript-webpack-plugin"
+  },
+  "keywords": [
+    "webpack",
+    "plugin",
+    "webpack-plugin",
+    "typescript"
+  ],
+  "author": "Andrey Popp <me@andreypopp.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/andreypopp/typescript-webpack-plugin/issues"
+  },
+  "homepage": "https://github.com/andreypopp/typescript-webpack-plugin"
+}
