@@ -33,7 +33,7 @@ TypeScriptPlugin.prototype.apply = function apply(compiler) {
 };
 
 TypeScriptPlugin.prototype.getScriptFileNames = function getScriptFileNames() {
-  return Object.keys(this.files).concat(this.getDefaultLibFilename());
+  return Object.keys(this.files);
 };
 
 TypeScriptPlugin.prototype.getScriptVersion = function getScriptVersion(filename) {
