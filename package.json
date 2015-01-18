@@ -10,7 +10,7 @@
     "bluebird": "^2.7.1",
     "object-assign": "^2.0.0",
     "typescript": "^1.4.1",
-    "webpack": "^1.5.1"
+    "webpack": "^1.0.0"
   },
   "devDependencies": {},
   "scripts": {
