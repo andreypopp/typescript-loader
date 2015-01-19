@@ -1,7 +1,7 @@
 {
-  "name": "typescript-webpack-plugin",
+  "name": "typescript-loader",
   "version": "1.0.0",
-  "description": "TypeScript Webpack Plugin",
+  "description": "TypeScript Webpack Loader",
   "main": "index.js",
   "directories": {
     "example": "example"
@@ -19,18 +19,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/andreypopp/typescript-webpack-plugin"
+    "url": "https://github.com/andreypopp/typescript-loader"
   },
   "keywords": [
     "webpack",
-    "plugin",
-    "webpack-plugin",
+    "loader",
+    "webpack-loader",
     "typescript"
   ],
   "author": "Andrey Popp <me@andreypopp.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/andreypopp/typescript-webpack-plugin/issues"
+    "url": "https://github.com/andreypopp/typescript-loader/issues"
   },
-  "homepage": "https://github.com/andreypopp/typescript-webpack-plugin"
+  "homepage": "https://github.com/andreypopp/typescript-loader"
 }

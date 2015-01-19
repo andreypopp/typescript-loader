@@ -1,6 +1,6 @@
-# TypeScript Webpack plugin
+# TypeScript Webpack Loader
 
-Webpack plugin for TypeScript.
+TypeScript loader for Webpack.
 
 Example `webpack.config.js` configuration:
 
@@ -16,7 +16,7 @@ Example `webpack.config.js` configuration:
         loaders: [
           {
             test: /\.ts$/,
-            loader: 'typescript-webpack-plugin'
+            loader: 'typescript-loader'
           }
         ],
       }
