@@ -10,6 +10,10 @@ var ts            = require('typescript');
 var objectAssign  = require('object-assign');
 var Promise       = require('bluebird');
 
+var RUNTIME_DECL_FILENAME = require.resolve('./webpack-runtime.d.ts');
+var RUNTIME_DECL_TEXT     = fs.readFileSync(RUNTIME_DECL_FILENAME, 'utf8');
+var RUNTIME_REF = '/// <reference path="' + RUNTIME_DECL_FILENAME + '" />';
+
 var DEFAULT_OPTIONS = {
   target: ts.ScriptTarget.ES5,
   module: ts.ModuleKind.CommonJS
@@ -23,6 +27,7 @@ function TypeScriptWebpackHost(options, fs) {
   this.fs = fs;
   this.files = {};
   this.services = ts.createLanguageService(this, ts.createDocumentRegistry());
+  this._addFile(RUNTIME_DECL_FILENAME, RUNTIME_DECL_TEXT);
 }
 
 /**
@@ -125,7 +130,7 @@ TypeScriptWebpackHost.prototype._addFile = function _addFile(filename, text) {
       version = version + 1;
     }
   }
-  this.files[filename] = {text: text, version: version};
+  this.files[filename] = {text: RUNTIME_REF + '\n' + text, version: version};
 };
 
 TypeScriptWebpackHost.prototype._readFile = function _readFile(filename) {

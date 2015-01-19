@@ -15,6 +15,10 @@ module.exports = {
       {
         test: /\.ts$/,
         loader: __dirname + '/../index'
+      },
+      {
+        test: /\.css$/,
+        loaders: ['style-loader', 'css-loader']
       }
     ],
   }
