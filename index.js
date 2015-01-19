@@ -16,7 +16,6 @@ function typescriptLoader(text) {
   var resolver = Promise.promisify(this.resolve);
 
   if (this._compiler.typeScriptWebpackHost === undefined) {
-    console.log('INIT COMPILER');
     var options = loaderUtils.parseQuery(this.query);
     this._compiler.typeScriptWebpackHost = new TypeScriptWebpackHost(
       options,
