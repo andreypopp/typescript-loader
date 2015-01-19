@@ -16,6 +16,7 @@ function typescriptLoader(text) {
   var resolver = Promise.promisify(this.resolve);
 
   if (this._compiler.typeScriptWebpackHost === undefined) {
+    console.log('INIT COMPILER');
     var options = loaderUtils.parseQuery(this.query);
     this._compiler.typeScriptWebpackHost = new TypeScriptWebpackHost(
       options,
@@ -23,28 +24,31 @@ function typescriptLoader(text) {
     );
   }
 
-  this._compiler.typeScriptWebpackHost.emit(resolver, filename, text, function(err, result) {
-    if (err) {
-      return cb(err);
-    }
-    if (result.output) {
-      for (var i = 0; i < result.output.outputFiles.length; i++) {
-        var o = result.output.outputFiles[i];
+  this._compiler.typeScriptWebpackHost.emit(resolver, filename, text)
+    .then(function(output) {
+      for (var i = 0; i < output.outputFiles.length; i++) {
+        var o = output.outputFiles[i];
         // tsc mangles filenames by replacing .ts to .js
         if (o.name.replace(/\.js$/, '.ts') === filename) {
-          return cb(null, o.text);
+          return o.text;
         }
       }
-      return cb(new Error('no output found for ' + filename));
-    } else if (result.errors) {
-      var errors = formatErrors(result.errors);
+      throw new Error('no output found for ' + filename);
+    }.bind(this))
+    .catch(TypeScriptWebpackHost.TypeScriptCompilationError, function(err) {
+      var errors = formatErrors(err.diagnostics);
       errors.forEach(this.emitError, this);
-      cb(null, errors
-        .map(function(error) { return 'console.error(' + JSON.stringify(error) + ');'; })
-        .join('\n'));
-    }
-  }.bind(this));
+      return codegenErrorReport(errors);
+    }.bind(this))
+    .then(cb.bind(null, null), cb);
+}
 
+function codegenErrorReport(errors) {
+  return errors
+    .map(function(error) {
+      return 'console.error(' + JSON.stringify(error) + ');';
+    })
+    .join('\n');
 }
 
 function formatErrors(errors) {

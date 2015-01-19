@@ -4,8 +4,9 @@
 'use strict';
 
 var fs            = require('fs');
-var ts            = require('typescript');
+var util          = require('util');
 var path          = require('path');
+var ts            = require('typescript');
 var objectAssign  = require('object-assign');
 var Promise       = require('bluebird');
 
@@ -141,7 +142,7 @@ TypeScriptWebpackHost.prototype.addFile = function addFile(filename) {
 /**
  * Emit compilation result for a specified filename.
  */
-TypeScriptWebpackHost.prototype.emit = function emit(resolver, filename, text, cb) {
+TypeScriptWebpackHost.prototype.emit = function emit(resolver, filename, text) {
   this._addFile(filename, text);
 
   var result = Promise.resolve();
@@ -159,18 +160,24 @@ TypeScriptWebpackHost.prototype.emit = function emit(resolver, filename, text, c
   }, this);
   result = result.then(function() { return Promise.all(dependencies); });
 
-  result.then(function() {
+  return result.then(function() {
     var output = this.services.getEmitOutput(filename);
     if (output.emitOutputStatus === ts.EmitReturnStatus.Succeeded) {
-      cb(null, {output: output});
+      return output;
     } else {
-      var errors = this.services
+      var diagnostics = this.services
         .getCompilerOptionsDiagnostics()
         .concat(this.services.getSyntacticDiagnostics(filename))
         .concat(this.services.getSemanticDiagnostics(filename));
-      cb(null, {errors: errors});
+      throw new TypeScriptCompilationError(diagnostics);
     }
-  }.bind(this), cb);
+  }.bind(this));
 };
 
+function TypeScriptCompilationError(diagnostics) {
+  this.diagnostics = diagnostics;
+}
+util.inherits(TypeScriptCompilationError, Error);
+
 module.exports = TypeScriptWebpackHost;
+module.exports.TypeScriptCompilationError = TypeScriptCompilationError;

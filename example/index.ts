@@ -4,5 +4,5 @@ import React = require('react');
 
 var x = React.createElement('div', {});
 
-var hwo = new hw.helloworld_module.HelloWorld('asdasd');
+var hwo = new hw.helloworld_module.HelloWorld('Hello world');
 hwo.sayit();
