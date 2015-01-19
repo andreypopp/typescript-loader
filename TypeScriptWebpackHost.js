@@ -10,9 +10,19 @@ var ts            = require('typescript');
 var objectAssign  = require('object-assign');
 var Promise       = require('bluebird');
 
-var RUNTIME_DECL_FILENAME = require.resolve('./webpack-runtime.d.ts');
-var RUNTIME_DECL_TEXT     = fs.readFileSync(RUNTIME_DECL_FILENAME, 'utf8');
-var RUNTIME_REF = '/// <reference path="' + RUNTIME_DECL_FILENAME + '" />';
+var LIB_FILENAME          = require.resolve('typescript/bin/lib.d.ts');
+var LIB_TEXT              = fs.readFileSync(LIB_FILENAME, 'utf8');
+
+function prepareStaticSource(moduleId) {
+  var filename = require.resolve(moduleId);
+  var text = fs.readFileSync(filename, 'utf8');
+  return {filename: filename, text: text};
+}
+
+var RUNTIME = prepareStaticSource('./webpack-runtime.d.ts');
+var LIB     = prepareStaticSource('typescript/bin/lib.d.ts');
+
+var RUNTIME_REF = '/// <reference path="' + RUNTIME.filename + '" />';
 
 var DEFAULT_OPTIONS = {
   target: ts.ScriptTarget.ES5,
@@ -27,7 +37,8 @@ function TypeScriptWebpackHost(options, fs) {
   this.fs = fs;
   this.files = {};
   this.services = ts.createLanguageService(this, ts.createDocumentRegistry());
-  this._addFile(RUNTIME_DECL_FILENAME, RUNTIME_DECL_TEXT);
+  this._addFile(RUNTIME.filename, RUNTIME.text);
+  this._addFile(LIB.filename, LIB.text);
 }
 
 /**
@@ -90,7 +101,7 @@ TypeScriptWebpackHost.prototype.getCompilationSettings = function getCompilation
  * Implementation of TypeScript Language Services Host interface.
  */
 TypeScriptWebpackHost.prototype.getDefaultLibFilename = function getDefaultLibFilename(options) {
-  return require.resolve('typescript/bin/lib.d.ts');
+  return LIB.filename;
 };
 
 /**
@@ -150,22 +161,12 @@ TypeScriptWebpackHost.prototype.addFile = function addFile(filename) {
 TypeScriptWebpackHost.prototype.emit = function emit(resolver, filename, text) {
   this._addFile(filename, text);
 
-  var result = Promise.resolve();
+  var dependencies = Promise.all(
+      this.findImportDeclarations(filename).map(function(dep) {
+        return resolver(path.dirname(filename), dep).then(this.addFile.bind(this));
+      }, this));
 
-  var libFilename = this.getDefaultLibFilename();
-  if (this.files[libFilename] === undefined) {
-    result = result.then(function() {
-      return this.addFile(libFilename);
-    }.bind(this));
-  }
-
-  var dependencies = this.findImportDeclarations(filename);
-  dependencies = dependencies.map(function(dep) {
-    return resolver(path.dirname(filename), dep).then(this.addFile.bind(this));
-  }, this);
-  result = result.then(function() { return Promise.all(dependencies); });
-
-  return result.then(function() {
+  return dependencies.then(function() {
     var output = this.services.getEmitOutput(filename);
     if (output.emitOutputStatus === ts.EmitReturnStatus.Succeeded) {
       return output;
