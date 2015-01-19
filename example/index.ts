@@ -1,8 +1,8 @@
 /// <reference path="typings/react/react.d.ts" />
-import hw = require("./helloworld");
+
 import React = require('react');
+import Button = require('./Button');
 
-var x = React.createElement('div', {});
-
-var hwo = new hw.helloworld_module.HelloWorld('Hello world');
-hwo.sayit();
+React.render(
+  React.createElement(Button.Button, {}),
+  document.getElementById('main'));
