@@ -4,8 +4,6 @@ Webpack plugin for TypeScript.
 
 Example `webpack.config.js` configuration:
 
-    var TypeScriptPlugin = require('typescript-webpack-plugin');
-
     module.exports = {
 
       // Currently we need to add '.ts' to resolve.extensions array.
@@ -18,14 +16,8 @@ Example `webpack.config.js` configuration:
         loaders: [
           {
             test: /\.ts$/,
-            loader: 'typescript-webpack-plugin/loader'
+            loader: 'typescript-webpack-plugin'
           }
         ],
-      },
-
-      // Add TypeScriptPlugin
-      plugins: [
-        new TypeScriptPlugin()
-      ]
-
+      }
     };

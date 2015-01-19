@@ -1,7 +1,3 @@
-var TypeScriptPlugin = require('../index');
-
-var typeScriptPlugin = new TypeScriptPlugin();
-
 module.exports = {
 
   entry: __dirname + '/index.ts',
@@ -18,13 +14,9 @@ module.exports = {
     loaders: [
       {
         test: /\.ts$/,
-        loader: __dirname + '/../loader'
+        loader: __dirname + '/../index'
       }
     ],
-  },
-
-  plugins: [
-    typeScriptPlugin
-  ]
+  }
 
 };
