@@ -1,4 +1,14 @@
 /**
  * Type declarations for Webpack runtime.
  */
-declare function require(x: string): any
+
+interface WebpackRequireEnsureCallback {
+  ((id: string) => any) => any
+}
+
+interface WebpackRequire {
+  (id: string) => any;
+  ensure(ids: string[], WebpackRequireEnsureCallback) => any;
+}
+
+declare var require: WebpackRequire;

@@ -5,7 +5,10 @@ module.exports = {
   devtool: 'source-map',
 
   output: {
-    filename: __dirname + '/bundle.js'
+    path: 'build',
+    filename: 'bundle.js',
+    chunkFilename: '[id].js',
+    publicPath: '/build/'
   },
 
   resolve: {

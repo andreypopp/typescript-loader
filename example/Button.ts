@@ -1,16 +1,18 @@
 import React = require('react');
 
-export var Button = React.createClass({
+var Button = React.createClass({
 
   render() {
     return React.DOM.button({onClick: this.onClick}, 'Typed Button!');
   },
 
   componentDidMount() {
-    throw new Error('xx');
+    console.log('hello');
   },
 
   onClick(e) {
     alert('Works!');
   }
 });
+
+export = Button;
