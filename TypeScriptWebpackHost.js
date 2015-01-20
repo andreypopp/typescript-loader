@@ -152,9 +152,26 @@ TypeScriptWebpackHost.prototype._readFile = function _readFile(filename) {
   });
 };
 
-TypeScriptWebpackHost.prototype.addFile = function addFile(filename) {
+TypeScriptWebpackHost.prototype._readFileAndAdd = function _readFileAndAdd(filename) {
   return this._readFile(filename).then(this._addFile.bind(this, filename));
 };
+
+TypeScriptWebpackHost.prototype._addDependencies = function(resolver, filename) {
+  var dependencies = this.findImportDeclarations(filename).map(function(dep) {
+    return resolver(path.dirname(filename), dep).then(function(filename) {
+      var added = this._readFileAndAdd(filename);
+      // This is d.ts which doesn't go through typescript-loader separately so
+      // we should take care of it by analyzing its dependencies here.
+      if (/\.d\.ts$/.exec(filename)) {
+        added = added.then(function() {
+          return this._addDependencies(resolver, filename);
+        }.bind(this));
+      }
+      return added;
+    }.bind(this));
+  }.bind(this));
+  return Promise.all(dependencies);
+}
 
 /**
  * Emit compilation result for a specified filename.
@@ -162,17 +179,13 @@ TypeScriptWebpackHost.prototype.addFile = function addFile(filename) {
 TypeScriptWebpackHost.prototype.emit = function emit(resolver, filename, text) {
   this._addFile(filename, text);
 
+  // Check if we need to compiler Webpack runtime definitions.
   if (!this._runtimeRead) {
     this._services.getEmitOutput(RUNTIME.filename);
     this._runtimeRead = true;
   }
 
-  var dependencies = Promise.all(
-      this.findImportDeclarations(filename).map(function(dep) {
-        return resolver(path.dirname(filename), dep).then(this.addFile.bind(this));
-      }, this));
-
-  return dependencies.then(function() {
+  return this._addDependencies(resolver, filename).then(function() {
     var output = this._services.getEmitOutput(filename);
     if (output.emitOutputStatus === ts.EmitReturnStatus.Succeeded) {
       return output;
