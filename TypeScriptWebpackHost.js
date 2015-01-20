@@ -22,11 +22,10 @@ function prepareStaticSource(moduleId) {
 var RUNTIME = prepareStaticSource('./webpack-runtime.d.ts');
 var LIB     = prepareStaticSource('typescript/bin/lib.d.ts');
 
-var RUNTIME_REF = '/// <reference path="' + RUNTIME.filename + '" />';
-
 var DEFAULT_OPTIONS = {
   target: ts.ScriptTarget.ES5,
-  module: ts.ModuleKind.CommonJS
+  module: ts.ModuleKind.CommonJS,
+  sourceMap: true
 };
 
 function TypeScriptWebpackHost(options, fs) {
@@ -34,9 +33,11 @@ function TypeScriptWebpackHost(options, fs) {
   objectAssign(this.options, DEFAULT_OPTIONS);
   objectAssign(this.options, options);
 
-  this.fs = fs;
-  this.files = {};
-  this.services = ts.createLanguageService(this, ts.createDocumentRegistry());
+  this._fs = fs;
+  this._files = {};
+  this._services = ts.createLanguageService(this, ts.createDocumentRegistry());
+  this._runtimeRead = null;
+
   this._addFile(RUNTIME.filename, RUNTIME.text);
   this._addFile(LIB.filename, LIB.text);
 }
@@ -45,21 +46,21 @@ function TypeScriptWebpackHost(options, fs) {
  * Implementation of TypeScript Language Services Host interface.
  */
 TypeScriptWebpackHost.prototype.getScriptFileNames = function getScriptFileNames() {
-  return Object.keys(this.files);
+  return Object.keys(this._files);
 };
 
 /**
  * Implementation of TypeScript Language Services Host interface.
  */
 TypeScriptWebpackHost.prototype.getScriptVersion = function getScriptVersion(filename) {
-  return this.files[filename] && this.files[filename].version.toString();
+  return this._files[filename] && this._files[filename].version.toString();
 };
 
 /**
  * Implementation of TypeScript Language Services Host interface.
  */
 TypeScriptWebpackHost.prototype.getScriptSnapshot = function getScriptSnapshot(filename) {
-  var file = this.files[filename];
+  var file = this._files[filename];
   return {
     getText: function(start, end) {
       return file.text.substring(start, end);
@@ -115,7 +116,7 @@ TypeScriptWebpackHost.prototype.log = function log(message) {
  * Return an array of import declarations found in source file.
  */
 TypeScriptWebpackHost.prototype.findImportDeclarations = function findImportDeclarations(filename) {
-  var node = this.services.getSourceFile(filename);
+  var node = this._services.getSourceFile(filename);
   var result = [];
   visit(node);
   return result;
@@ -133,7 +134,7 @@ TypeScriptWebpackHost.prototype.findImportDeclarations = function findImportDecl
 };
 
 TypeScriptWebpackHost.prototype._addFile = function _addFile(filename, text) {
-  var prevFile = this.files[filename];
+  var prevFile = this._files[filename];
   var version = 0;
   if (prevFile) {
     version = prevFile.version;
@@ -141,11 +142,11 @@ TypeScriptWebpackHost.prototype._addFile = function _addFile(filename, text) {
       version = version + 1;
     }
   }
-  this.files[filename] = {text: RUNTIME_REF + '\n' + text, version: version};
+  this._files[filename] = {text: text, version: version};
 };
 
 TypeScriptWebpackHost.prototype._readFile = function _readFile(filename) {
-  var readFile = Promise.promisify(this.fs.readFile.bind(this.fs));
+  var readFile = Promise.promisify(this._fs.readFile.bind(this._fs));
   return readFile(filename).then(function(buf) {
     return buf.toString('utf8');
   });
@@ -161,20 +162,25 @@ TypeScriptWebpackHost.prototype.addFile = function addFile(filename) {
 TypeScriptWebpackHost.prototype.emit = function emit(resolver, filename, text) {
   this._addFile(filename, text);
 
+  if (!this._runtimeRead) {
+    this._services.getEmitOutput(RUNTIME.filename);
+    this._runtimeRead = true;
+  }
+
   var dependencies = Promise.all(
       this.findImportDeclarations(filename).map(function(dep) {
         return resolver(path.dirname(filename), dep).then(this.addFile.bind(this));
       }, this));
 
   return dependencies.then(function() {
-    var output = this.services.getEmitOutput(filename);
+    var output = this._services.getEmitOutput(filename);
     if (output.emitOutputStatus === ts.EmitReturnStatus.Succeeded) {
       return output;
     } else {
-      var diagnostics = this.services
+      var diagnostics = this._services
         .getCompilerOptionsDiagnostics()
-        .concat(this.services.getSyntacticDiagnostics(filename))
-        .concat(this.services.getSemanticDiagnostics(filename));
+        .concat(this._services.getSyntacticDiagnostics(filename))
+        .concat(this._services.getSemanticDiagnostics(filename));
       throw new TypeScriptCompilationError(diagnostics);
     }
   }.bind(this));

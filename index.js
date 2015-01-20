@@ -25,21 +25,38 @@ function typescriptLoader(text) {
 
   this._compiler.typeScriptWebpackHost.emit(resolver, filename, text)
     .then(function(output) {
-      for (var i = 0; i < output.outputFiles.length; i++) {
-        var o = output.outputFiles[i];
-        // tsc mangles filenames by replacing .ts to .js
-        if (o.name.replace(/\.js$/, '.ts') === filename) {
-          return o.text;
-        }
+      var result = findResultFor(output, filename);
+      if (result.text === undefined) {
+        throw new Error('no output found for ' + filename);
       }
-      throw new Error('no output found for ' + filename);
+      var sourceMap = JSON.parse(result.sourceMap);
+      sourceMap.sourcesContent = [text];
+      cb(null, result.text, sourceMap);
     }.bind(this))
     .catch(TypeScriptWebpackHost.TypeScriptCompilationError, function(err) {
       var errors = formatErrors(err.diagnostics);
       errors.forEach(this.emitError, this);
-      return codegenErrorReport(errors);
+      cb(null, codegenErrorReport(errors));
     }.bind(this))
-    .then(cb.bind(null, null), cb);
+    .catch(cb);
+}
+
+function findResultFor(output, filename) {
+  var text;
+  var sourceMap;
+  for (var i = 0; i < output.outputFiles.length; i++) {
+    var o = output.outputFiles[i];
+    if (o.name.replace(/\.js$/, '.ts') === filename) {
+      text = o.text;
+    }
+    if (o.name.replace(/\.js.map$/, '.ts') === filename) {
+      sourceMap = o.text;
+    }
+  }
+  return {
+    text: text,
+    sourceMap: sourceMap
+  };
 }
 
 function codegenErrorReport(errors) {
