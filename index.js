@@ -6,6 +6,7 @@
 var Promise               = require('bluebird');
 var TypeScriptWebpackHost = require('./TypeScriptWebpackHost');
 var loaderUtils           = require('loader-utils');
+var path                  = require('path');
 
 function typescriptLoader(text) {
   if (this.cacheable) {
@@ -44,12 +45,14 @@ function typescriptLoader(text) {
 function findResultFor(output, filename) {
   var text;
   var sourceMap;
+  filename = path.normalize(filename);
   for (var i = 0; i < output.outputFiles.length; i++) {
     var o = output.outputFiles[i];
-    if (o.name.replace(/\.js$/, '.ts') === filename) {
+    var outputFileName = path.normalize(o.name);
+    if (outputFileName.replace(/\.js$/, '.ts') === filename) {
       text = o.text;
     }
-    if (o.name.replace(/\.js.map$/, '.ts') === filename) {
+    if (outputFileName.replace(/\.js.map$/, '.ts') === filename) {
       sourceMap = o.text;
     }
   }
