@@ -1,9 +1,10 @@
-/// <reference path="typings/react/react.d.ts" />
+/// <reference path="typings/tsd.d.ts" />
 
 require('./index.css');
 
 import React = require('react');
 import Button = require('./Button');
+
 
 React.render(
   React.createElement(Button.Button, {}),
