@@ -10,9 +10,6 @@ var ts            = require('typescript');
 var objectAssign  = require('object-assign');
 var Promise       = require('bluebird');
 
-var LIB_FILENAME          = require.resolve('typescript/bin/lib.d.ts');
-var LIB_TEXT              = fs.readFileSync(LIB_FILENAME, 'utf8');
-
 function prepareStaticSource(moduleId) {
   var filename = require.resolve(moduleId);
   var text = fs.readFileSync(filename, 'utf8');
