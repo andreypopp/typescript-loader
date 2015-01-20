@@ -1,5 +1,3 @@
-/// <reference path="typings/react/react.d.ts" />
-
 import React = require('react');
 
 export var Button = React.createClass({
