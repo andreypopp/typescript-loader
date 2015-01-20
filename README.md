@@ -11,6 +11,9 @@ Example `webpack.config.js` configuration:
         extensions: ['', '.webpack.js', '.web.js', '.ts', '.js']
       },
 
+      // Source maps support (or 'inline-source-map' also works)
+      devtool: 'source-map',
+
       // Add loader for .ts files.
       module: {
         loaders: [
