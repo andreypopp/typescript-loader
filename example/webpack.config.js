@@ -2,6 +2,8 @@ module.exports = {
 
   entry: __dirname + '/index.ts',
 
+  devtool: 'source-map',
+
   output: {
     filename: __dirname + '/bundle.js'
   },

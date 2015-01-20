@@ -2,7 +2,7 @@
 
 require('./index.css');
 
-import React = require('react');
+import React = require('react/addons');
 import Button = require('./Button');
 
 React.render(

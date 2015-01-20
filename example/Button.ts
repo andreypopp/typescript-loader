@@ -8,6 +8,10 @@ export var Button = React.createClass({
     return React.DOM.button({onClick: this.onClick}, 'Typed Button!');
   },
 
+  componentDidMount() {
+    throw new Error('xx');
+  },
+
   onClick(e) {
     alert('Works!');
   }
