@@ -112,7 +112,7 @@ TypeScriptWebpackHost.prototype.log = function log(message) {
 /**
  * Return an array of import declarations found in source file.
  */
-TypeScriptWebpackHost.prototype.findImportDeclarations = function findImportDeclarations(filename) {
+TypeScriptWebpackHost.prototype._findImportDeclarations = function _findImportDeclarations(filename) {
   var node = this._services.getSourceFile(filename);
   var result = [];
   visit(node);
@@ -154,7 +154,7 @@ TypeScriptWebpackHost.prototype._readFileAndAdd = function _readFileAndAdd(filen
 };
 
 TypeScriptWebpackHost.prototype._addDependencies = function(resolver, filename) {
-  var dependencies = this.findImportDeclarations(filename).map(function(dep) {
+  var dependencies = this._findImportDeclarations(filename).map(function(dep) {
     return resolver(path.dirname(filename), dep).then(function(filename) {
       var added = this._readFileAndAdd(filename);
       // This is d.ts which doesn't go through typescript-loader separately so
