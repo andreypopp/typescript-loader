@@ -4,9 +4,10 @@
 'use strict';
 
 var Promise               = require('bluebird');
-var TypeScriptWebpackHost = require('./TypeScriptWebpackHost');
+var ts                    = require('typescript');
 var loaderUtils           = require('loader-utils');
 var path                  = require('path');
+var TypeScriptWebpackHost = require('./TypeScriptWebpackHost');
 
 function typescriptLoader(text) {
   if (this.cacheable) {
@@ -18,6 +19,9 @@ function typescriptLoader(text) {
 
   if (this._compiler.typeScriptWebpackHost === undefined) {
     var options = loaderUtils.parseQuery(this.query);
+    if (options.target) {
+      options.target = parseOptionTarget(options.target);
+    }
     this._compiler.typeScriptWebpackHost = new TypeScriptWebpackHost(
       options,
       this._compiler.inputFileSystem
@@ -60,6 +64,18 @@ function findResultFor(output, filename) {
     text: text,
     sourceMap: sourceMap
   };
+}
+
+function parseOptionTarget(target) {
+  target = target.toLowerCase();
+  switch (target) {
+    case 'es3':
+      return ts.ScriptTarget.ES3;
+    case 'es5':
+      return ts.ScriptTarget.ES5;
+    case 'es6':
+      return ts.ScriptTarget.ES6;
+  }
 }
 
 function codegenErrorReport(errors) {
