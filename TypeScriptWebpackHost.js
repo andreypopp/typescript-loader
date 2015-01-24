@@ -22,7 +22,8 @@ var LIB     = prepareStaticSource('typescript/bin/lib.d.ts');
 var DEFAULT_OPTIONS = {
   target: ts.ScriptTarget.ES5,
   module: ts.ModuleKind.CommonJS,
-  sourceMap: true
+  sourceMap: true,
+  verbose: false
 };
 
 function TypeScriptWebpackHost(options, fs) {
@@ -106,7 +107,9 @@ TypeScriptWebpackHost.prototype.getDefaultLibFilename = function getDefaultLibFi
  * Implementation of TypeScript Language Services Host interface.
  */
 TypeScriptWebpackHost.prototype.log = function log(message) {
-  return console.log(message);
+  if (this.options.verbose) {
+    console.log(message);
+  }
 };
 
 /**
