@@ -19,7 +19,7 @@ module.exports = {
     loaders: [
       {
         test: /\.ts$/,
-        loader: __dirname + '/../index?verbose'
+        loader: __dirname + '/../lib/index?verbose'
       },
       {
         test: /\.css$/,
