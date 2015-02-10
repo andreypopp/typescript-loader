@@ -29,9 +29,11 @@ module.exports = {
 };
 ```
 
+After that, you would be able to write JSX in TypeScript!
+
 ## Best Practices
 
-### Using with JSX-TypeScript compuler
+### Using with JSX-TypeScript compiler
 
 You can use `typescript-loader` together with
 [jsx-typscript](https://github.com/fdecampredon/jsx-typescript) compiler which
