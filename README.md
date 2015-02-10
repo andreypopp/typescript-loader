@@ -24,12 +24,38 @@ module.exports = {
         test: /\.ts$/,
         loader: 'typescript-loader'
       }
-    ],
+    ]
   }
 };
 ```
 
 ## Best Practices
+
+### Using with JSX-TypeScript compuler
+
+You can use `typescript-loader` together with
+[jsx-typscript](https://github.com/fdecampredon/jsx-typescript) compiler which
+has support for JSX syntax (used in React.js).
+
+For that you need to install `jsx-typescript`:
+
+    % npm install jsx-typescript
+
+And specify `typescriptCompiler` loader option:
+
+```javascript
+module.exports = {
+
+  module: {
+    loaders: [
+      {
+        test: /\.ts$/,
+        loader: 'typescript-loader?typescriptCompiler=jsx-typescript'
+      }
+    ]
+  }
+};
+```
 
 ### External Modules
 
