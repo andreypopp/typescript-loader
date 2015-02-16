@@ -3,13 +3,13 @@ BIN := ./node_modules/.bin
 install link:
 	@npm $@
 
-release-patch: test
+release-patch:
 	@$(call release,patch)
 
-release-minor: test
+release-minor:
 	@$(call release,minor)
 
-release-major: test
+release-major:
 	@$(call release,major)
 
 publish:
