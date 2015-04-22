@@ -36,7 +36,7 @@ After that, you would be able to write JSX in TypeScript!
 ### Using with JSX-TypeScript compiler
 
 You can use `typescript-loader` together with
-[jsx-typscript](https://github.com/fdecampredon/jsx-typescript) compiler which
+[jsx-typescript](https://github.com/fdecampredon/jsx-typescript) compiler which
 has support for JSX syntax (used in React.js).
 
 For that you need to install `jsx-typescript`:
