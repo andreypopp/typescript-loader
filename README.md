@@ -1,5 +1,7 @@
 # TypeScript Webpack Loader
 
+**DEPRECATED:** Use [awesome-typescript-loader](https://github.com/s-panferov/awesome-typescript-loader) or [ts-loader](https://github.com/TypeStrong/ts-loader) instead.
+
 TypeScript loader for Webpack.
 
 ## Example Configuration
